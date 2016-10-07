@@ -45,6 +45,7 @@ ds.ls() # this command lists the available variables and dataframes in the works
 
 # Each study's data is encapsulated inside a dataframe called 'D' lets look at it in more details
 ds.summary('D') # we see some descrptive properties of the dataframe
+ds.dim('D')
 
 # lets try looking at some of the variables in more detail
 ds.summary('D$SEX')
@@ -64,9 +65,75 @@ ls("package:dsBaseClient")  # note how that was not a datashield command but an 
 ds.mean('D$WEIGHT', type='split')
 ds.mean('D$WEIGHT', type='combine')
 
+# which we can to assign to variables that will be available in our environment as you can see in your variables list in RStudio
 split_weight <- ds.mean('D$WEIGHT', type='split')
 combined_weight <- ds.mean('D$WEIGHT', type='combine')
 
+split_weight_quantiles <- ds.quantileMean('D$WEIGHT', type='split')
+combined_weight_quantiles <- ds.quantileMean('D$WEIGHT', type='combine')
+
+
+
 # Assign functions are functions that allow us to assign variables in the study machines to help us analyse things further
 # for example we'd like to find the average weight of men and women respectively, at the present we cant do that with
-# 'D' because it doesnt distinguish sex, but we can subset it.
+# 'D' because it doesnt distinguish sex, but we can subset it for further use after,
+# similar use cases include
+# new transformed variables (mean centred, log tranformed)
+# new classes
+ds.log('D$WEIGHT') # we took the natural logarithm of the weight in each study and stored it there
+ds.ls()
+
+# of course in this case because we didn't specify a name for the output of that function each of the studies
+# have WEIGHT_log in them, naming things is easy
+ds.log('D$WEIGHT', newobj='weightLogs')
+
+# This object is a vector of the same length as the number of rows in the dataframe from whence it came
+ds.length('weightLogs', type='split')
+ds.length('D$WEIGHT', type='split')
+
+# we can perform a limited set of seemingly arbitrary assign commands using the ds.assign function
+# which enables the creation of new objects in the server side
+# for example to calculate the mean centred weight of people we subtract the weights by the mean weight
+split_weight
+ds.assign(toAssign='D$WEIGHT - 50', newobj='meanCentreWeight')
+
+# then we can use this new things through an aggregate function
+ds.mean('meanCentreWeight')
+
+# Contingency tables if thats your thing
+ds.table1D(x='D$SEX')
+ds.table1D(x='D$SEX', type='split')
+
+ds.table1D(x='D$SEX', y='D$DIS_DIAB') # will throw an error cause DIS_DIAB doesnt exist
+
+# Subsetiting
+ds.subsetByClass(x = 'D', subsets = "GenderTables", variables = 'SEX')
+ds.names('GenderTables') # obtains the names of the subsets
+ds.subset(x='D', subset='giants', logicalOperator='HEIGHT>=', threshold=171) #everyone taller than me is too tall.
+
+
+## GENERATING GRAPHS
+# histograms
+ds.histogram(x='D$HEIGHT')
+ds.histogram(x='D$HEIGHT', type='split')
+
+# contour plots - to visualise correlation patterns
+ds.contourPlot(x='D$WEIGHT', y='D$HEIGHT')
+
+# similarly heat plots (mind you these are non disclosive editions of these)
+ds.heatmapPlot(x='D$WEIGHT', y='D$HEIGHT')
+
+
+
+
+# MODELLING
+# Horizontal DataSHIELD allows the fitting of:
+# generalised linear models (GLM)
+# In GLM function the outcome can be modelled as continuous, or categorical (binomial
+# or discrete). The error to use in the model can follow a range of distribution
+# including gaussian, binomial, Gamma and poisson. In this section only one example
+# will be shown, for more examples please see the manual help page for the function.
+
+# To fit a linear model we have to give it an equation to fit to
+equation <- "WEIGHT ~ HEIGHT + SEX"
+ds.glm(formula=equation, family = 'gaussian')
