@@ -182,3 +182,49 @@ rownames(summary_lga) <- study_names
 summary_lga <- summary_lga[,c(1,2,5,6)]
 colnames(summary_lga) <- c("class", "length", "No", "Yes")
 rm(summary_lga_temp)
+
+
+#--------------- FUNCTIONS TO HELP WITH REGRESSIONS AND REM ------------------#
+do_reg <- function(my_fmla, study, outcome, out_family){
+  
+  model <- ds.glm(formula= my_fmla, data = ref_table, family = out_family, datasources=opals[i], maxit = 100)
+  model_coeffs <- as.data.frame(model$coefficients)
+  model_coeffs$study = study
+  model_coeffs$outcome = outcome
+  model_coeffs$cov = rownames(model_coeffs)
+  for (x in 1:3){ model_coeffs <- model_coeffs[,c(ncol(model_coeffs),1:(ncol(model_coeffs)-1))]}
+  rownames(model_coeffs) = NULL
+  return(model_coeffs)
+}
+
+do_REM <- function(coeffs, s_err, labels, fmla, out_family, variable){
+  
+  res <- rma(yi = coeffs, sei = s_err, method='DL', slab = labels)
+  
+  #forest plots
+  
+  if (out_family == 'gaussian') {
+    usr <- par("usr")
+    forest(res, mlab=bquote(paste('Overall (I'^2*' = ', .(round(res$I2)),'%, p = ',
+                                  .(round(res$QEp,3)),')')),
+           xlab=bquote(paste('Test of H'[0]*': true mean association = 0, p = ',
+                             .(round(res$pval,3)))), ilab = cbind(weights.rma.uni(res)),ilab.xpos = c(usr[1]))
+    text(usr[2], usr[4], "Beta [95% CI]", adj = c(1, 8))
+    #text(usr[1], usr[4], gsub(paste0(ref_table,"\\$"),"", Reduce(paste, deparse(fmla))), adj = c( 0, 8 ))
+    text(usr[1], usr[4], paste0(gsub(paste0(ref_table,"\\$"),"", deparse(fmla)),collapse="\n"), adj = c( 0, 1 ))
+    text(usr[1], usr[3], variable, adj = c( 0, 0 ))
+  }
+  else if (out_family == 'binomial'){
+    usr <- par("usr")
+    forest(res, digits=3, mlab=bquote(paste('Overall (I'^2*' = ', .(round(res$I2)),'%, p = ',
+                                            .(round(res$QEp,3)),')')),
+           xlab=bquote(paste('Test of H'[0]*': true relative risk = 1, p = ',
+                             .(round(res$pval,3)))),ilab = cbind(weights.rma.uni(res)),ilab.xpos = c(usr[1]), atransf = exp)
+    text(usr[2], usr[4], "Relative Risk [95% CI]", adj = c(1, 8))
+    #text(usr[1], usr[4], gsub(paste0(ref_table,"\\$"),"", Reduce(paste, deparse(fmla))), adj = c( 0, 8 ))
+    text(usr[1], usr[4], paste0(gsub(paste0(ref_table,"\\$"),"", deparse(fmla)),collapse="\n"), adj = c( 0, 1 ))
+    text(usr[1], usr[3], variable, adj = c( 0, 0))
+  }
+  
+  return(res)
+}
