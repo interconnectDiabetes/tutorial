@@ -1,21 +1,21 @@
-# If it hasnt already been done we have to install all of the datashield dependencies before we can do anything.
-# ie we have to download the libraries and make them available to our R sessions
-
-# First are the libraries R depends on
-install.packages('RCurl', dependencies = TRUE)
-install.packages('rjson', dependencies = TRUE)
-install.packages('fields', dependencies = TRUE)
-
-# then install opal and co
-install.packages('opal', repos='http://cran.obiba.org', type='source')
-install.packages('datashieldclient', repos='http://cran.obiba.org', type='source')
-
-# if we get errors from this we install the dependencies one by time
-install.packages('opal', repos='http://cran.obiba.org', type='source')
-install.packages('dsBaseClient', repos='http://cran.obiba.org', type='source')
-install.packages('dsModellingClient', repos='http://cran.obiba.org', type='source')
-install.packages('dsGraphicsClient', repos='http://cran.obiba.org', type='source')
-install.packages('dsStatsClient', repos='http://cran.obiba.org', type='source')
+# # If it hasnt already been done we have to install all of the datashield dependencies before we can do anything.
+# # ie we have to download the libraries and make them available to our R sessions
+# 
+# # First are the libraries R depends on
+# install.packages('RCurl', dependencies = TRUE)
+# install.packages('rjson', dependencies = TRUE)
+# install.packages('fields', dependencies = TRUE)
+# 
+# # then install opal and co
+# install.packages('opal', repos='http://cran.obiba.org', type='source')
+# install.packages('datashieldclient', repos='http://cran.obiba.org', type='source')
+# 
+# # if we get errors from this we install the dependencies one by time
+# install.packages('opal', repos='http://cran.obiba.org', type='source')
+# install.packages('dsBaseClient', repos='http://cran.obiba.org', type='source')
+# install.packages('dsModellingClient', repos='http://cran.obiba.org', type='source')
+# install.packages('dsGraphicsClient', repos='http://cran.obiba.org', type='source')
+# install.packages('dsStatsClient', repos='http://cran.obiba.org', type='source')
 
 # I'm an advocate of programming the hard way, ie not by copy pasting and actually typing things
 # down, muscle memory is surprisingly helpful in programming!
@@ -27,15 +27,16 @@ library(dsModellingClient)
 library(metafor)
 
 # This creates lists of locations and objects we'd like to connect to
-server <- c( 'lifelines', 'pauldata')
-url <- c('https://192.168.56.110:8843','https://192.168.56.111:8443')
-table <- c('lifelines.lifelines_harm', 'tutorial.finrisk_harm')
+server <- c( 'lifelines', 'finrisk')
+url <- c('https://opal-dev.mrc-epid.cam.ac.uk:8443','https://opal-dev.mrc-epid.cam.ac.uk:8443')
+table <- c('pauldata.lifelines_harm', 'pauldata.finrisk_harm')
 password <- c('test1234')
-user <- c('test')
+user <- c('tutorial_user')
 logindata_all <- data.frame(server,url,user,password, table) # here we take all the lists and put them into a dataframe
 
 # ... and login with those details, giving us an 'opals' object which is kind of like a phone operator we have to
 # communicate with to talk to the opal servers each time
+datashield.logout(opals)
 opals <- datashield.login(logins=logindata_all, assign=TRUE)
 
 ## ** Difference between datashield and normal r commands is the prefix ds (typically) **
@@ -106,7 +107,7 @@ ds.table1D(x='D$SEX', type='split')
 
 ds.table1D(x='D$SEX', y='D$DIS_DIAB') # will throw an error cause DIS_DIAB doesnt exist
 
-# Subsetiting
+# Subsetting
 ds.subsetByClass(x = 'D', subsets = "GenderTables", variables = 'SEX')
 ds.names('GenderTables') # obtains the names of the subsets
 ds.subset(x='D', subset='giants', logicalOperator='HEIGHT>=', threshold=171) #everyone taller than me is too tall.
