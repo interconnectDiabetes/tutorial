@@ -49,7 +49,7 @@ ds.summary('D') # we see some descrptive properties of the dataframe
 ds.dim('D')
 
 # lets try looking at some of the variables in more detail
-ds.summary('D$SEX')
+ds.summary('D$GENDER')
 
 ds.summary('D$WEIGHT')
 
@@ -77,7 +77,7 @@ combined_weight_quantiles <- ds.quantileMean('D$WEIGHT', type='combine')
 
 # Assign functions are functions that allow us to assign variables in the study machines to help us analyse things further
 # for example we'd like to find the average weight of men and women respectively, at the present we cant do that with
-# 'D' because it doesnt distinguish sex, but we can subset it for further use after,
+# 'D' because it doesnt distinguish GENDER, but we can subset it for further use after,
 # similar use cases include
 # new transformed variables (mean centred, log tranformed)
 # new classes
@@ -87,6 +87,7 @@ ds.ls()
 # of course in this case because we didn't specify a name for the output of that function each of the studies
 # have WEIGHT_log in them, naming things is easy
 ds.log('D$WEIGHT', newobj='weightLogs')
+ds.ls()
 
 # This object is a vector of the same length as the number of rows in the dataframe from whence it came
 ds.length('weightLogs', type='split')
@@ -102,13 +103,13 @@ ds.assign(toAssign='D$WEIGHT - 50', newobj='meanCentreWeight')
 ds.mean('meanCentreWeight')
 
 # Contingency tables if thats your thing
-ds.table1D(x='D$SEX')
-ds.table1D(x='D$SEX', type='split')
+ds.table1D(x='D$GENDER')
+ds.table1D(x='D$GENDER', type='split')
 
-ds.table1D(x='D$SEX', y='D$DIS_DIAB') # will throw an error cause DIS_DIAB doesnt exist
+ds.table1D(x='D$GENDER', y='D$DIS_DIAB') # will throw an error cause DIS_DIAB doesnt exist
 
 # Subsetting
-ds.subsetByClass(x = 'D', subsets = "GenderTables", variables = 'SEX')
+ds.subsetByClass(x = 'D', subsets = "GenderTables", variables = 'GENDER')
 ds.names('GenderTables') # obtains the names of the subsets
 ds.subset(x='D', subset='giants', logicalOperator='HEIGHT>=', threshold=171) #everyone taller than me is too tall.
 
@@ -136,5 +137,7 @@ ds.heatmapPlot(x='D$WEIGHT', y='D$HEIGHT')
 # will be shown, for more examples please see the manual help page for the function.
 
 # To fit a linear model we have to give it an equation to fit to
-equation <- "WEIGHT ~ HEIGHT + SEX"
+equation <- "D$HEIGHT ~ D$WEIGHT"
 ds.glm(formula=equation, family = 'gaussian')
+
+# What would we do if we wanted to do this investigation amongst all those tall folks?

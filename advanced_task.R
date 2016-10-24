@@ -1,5 +1,7 @@
 ## Welcome to your advanced datashield task of investigating the confounding variables in DNBC
 
+setwd('/home/shared/certificates/pa')
+
 library(opal)
 library(dsBaseClient)
 library(dsStatsClient)
@@ -10,7 +12,7 @@ library(metafor)
 server <- c('DNBC')
 url <- c('https://193.163.131.62:8443')
 table <- c('DNBC_InterConnect.DNBC_harm')
-password <- c( 'datashield-test-privatekey.pem')
+password <- c('datashield-test-privatekey.pem')
 user <- c('datashield-test-publickey.pem')
 logindata_all <- data.frame(server,url,user,password, table)
 
